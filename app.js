@@ -27,7 +27,7 @@ app.configure(function () {
     return stylus(str)
       .set('filename', path)
       .use(nib());
-  };
+  }
 });
 
 /**
