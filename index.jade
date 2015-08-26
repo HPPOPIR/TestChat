@@ -7,7 +7,8 @@ html
     script
       // socket.io specific code
       var socket = io.connect();
-      var currentUser = '';
+      var currentUser = '',
+          currentRoom = '';
 
       socket.on('connect', function () {
         $('#chat').addClass('connected');
@@ -40,7 +41,8 @@ html
         message('System', e ? e : 'A unknown error occurred');
       });
 
-      socket.on('calledToRoom', function (users) {
+      socket.on('calledToRoom', function (users, roomName) {
+        currentRoom = roomName;
         showChat(users);
       });
 
@@ -75,10 +77,32 @@ html
         return users;
       }
 
+      function changeCurrentRoom(newCurrentRoom) {
+      currentRoom = newCurrentRoom ? newCurrentRoom : currentRoom;
+      currentRoom = currentRoom.trim();
+        $('button.selected').removeClass('selected').addClass('unselected');
+        $('.unselected').each(function (key, btn) {
+          if ( $(btn).html().trim() === currentRoom ) {
+            $(btn).removeClass('unselected').addClass('selected');
+          }
+        });
+      }
+
+      function getRooms() {
+        $('#room').empty();
+        socket.emit('getRooms', function (rooms) {
+          rooms.forEach(function (room) {
+            $('#room').append('<button id="btnRoom' + room + '" class="unselected" onclick="changeCurrentRoom($(this).html())"> ' + room + ' </button> ')
+          });
+          changeCurrentRoom();
+        });
+      }
+
       function showChat(users) {
-        $('#messages').show();
+        $('#rooms').show();
         $('#chat').addClass('users-selected');
         addUserNamesToChat(users);
+        getRooms();
       }
 
       function createRoom() {
@@ -86,7 +110,7 @@ html
             users = getSelectedUsers();
         if( roomName ) {
           socket.emit('createRoom', roomName, users, function () {
-            showChat(users);
+            currentRoom = roomName;
           });
         }
       }
@@ -130,7 +154,7 @@ html
               clear();
               getOnlineUsers();
               $('#nickname').hide();
-              $('#messages').hide();
+              $('#rooms').hide();
               $('#online-users').show();
 
             }
@@ -167,8 +191,7 @@ html
            #connecting
                .wrap Connecting to socket.io server
            #rooms
-
-           #messages
+               #room
                #nicknames
                #lines
                form#send-message

@@ -1,6 +1,6 @@
 #chat,
 #nickname,
-#messages {
+#rooms {
   width: 100%;
 }
 #chat {
@@ -57,36 +57,36 @@
 .users-selected #online-users {
   display: none;
 }
-#messages {
+#rooms {
   height: 100%;
   background: #eee;
 }
-#messages em {
+#rooms em {
   text-shadow: 0 1px 0 #fff;
   color: #999;
 }
-#messages p {
+#rooms p {
   padding: 0;
   margin: 0;
   font: 12px Helvetica, Arial;
   padding: 5px 10px;
 }
-#messages p b {
+#rooms p b {
   display: inline-block;
   padding-right: 10px;
 }
-#messages p:nth-child(even) {
+#rooms p:nth-child(even) {
   background: #fafafa;
 }
-#messages #nicknames {
+#rooms #nicknames {
   background: #ccc;
   padding: 2px 4px 4px;
   font: 11px Helvetica;
 }
-#messages #nicknames span {
+#rooms #nicknames span {
   color: #000;
 }
-#messages #nicknames b {
+#rooms #nicknames b {
   display: inline-block;
   color: #fff;
   background: #999;
@@ -97,34 +97,34 @@
   border-radius: 10px;
   text-shadow: 0 1px 0 #666;
 }
-#messages #lines {
-  height: 570px;
+#rooms #lines {
+  height: 100%;
   overflow: auto;
   overflow-x: hidden;
   overflow-y: auto;
 }
-#messages #lines::-webkit-scrollbar {
+#rooms #lines::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
-#messages #lines::-webkit-scrollbar-button:start:decrement,
-#messages #lines ::-webkit-scrollbar-button:end:increment {
+#rooms #lines::-webkit-scrollbar-button:start:decrement,
+#rooms #lines ::-webkit-scrollbar-button:end:increment {
   display: block;
   height: 10px;
 }
-#messages #lines::-webkit-scrollbar-button:vertical:increment {
+#rooms #lines::-webkit-scrollbar-button:vertical:increment {
   background-color: #fff;
 }
-#messages #lines::-webkit-scrollbar-track-piece {
+#rooms #lines::-webkit-scrollbar-track-piece {
   background-color: #fff;
   -webkit-border-radius: 3px;
 }
-#messages #lines::-webkit-scrollbar-thumb:vertical {
+#rooms #lines::-webkit-scrollbar-thumb:vertical {
   height: 100px;
   background-color: #ccc;
   -webkit-border-radius: 3px;
 }
-#messages #lines::-webkit-scrollbar-thumb:horizontal {
+#rooms #lines::-webkit-scrollbar-thumb:horizontal {
   width: 70px;
   background-color: #fff;
   -webkit-border-radius: 3px;
@@ -162,6 +162,16 @@
   background: -moz-linear-gradient(top, #008000 0%, #008000 100%);
   background: linear-gradient(top, #008000 0%, #008000 100%);
   font-size: 20px;
+}
+.unselected {
+  width: auto;
+  height: auto;
+  background: #00f;
+}
+.selected {
+  width: auto;
+  height: auto;
+  background: #008000;
 }
 button {
   margin: 0;

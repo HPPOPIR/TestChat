@@ -1,6 +1,6 @@
 @import 'nib'
 
-#chat, #nickname, #messages
+#chat, #nickname, #rooms
   width 100%
 
 #chat
@@ -57,7 +57,7 @@
   #online-users
     display none
 
-#messages
+#rooms
   height 100%
   background #eee
   em
@@ -88,7 +88,7 @@
       border-radius 10px
       text-shadow 0 1px 0 #666
   #lines
-    height 570px
+    height 100%
     overflow auto
     overflow-x hidden
     overflow-y auto
@@ -111,6 +111,9 @@
       width 70px
       background-color #fff
       -webkit-border-radius 3px
+
+
+
 
 #send-message
   background #fff
@@ -139,6 +142,17 @@
     background: -moz-linear-gradient(top, green 0%, green 100%)
     background: linear-gradient(top, green 0%, green 100%)
     font-size 20px
+
+.unselected
+  width auto
+  height auto
+  background blue
+
+.selected
+  width auto
+  height auto
+  background #008000
+
 
 
 button

@@ -44,11 +44,7 @@ app.listen(process.env.PORT||3000, function () {
  */
 
 var io = sio.listen(app)
-  , nicknames = {},
-    rooms = [{
-        roomName: '',
-        users: []
-    }];
+  , nicknames = {};
 
 io.sockets.on('connection', function (socket) {
 
@@ -57,7 +53,7 @@ io.sockets.on('connection', function (socket) {
             io.sockets.sockets.every(function (s) {
                 if( s.nickname === user) {
                     s.join(room);
-                    s.emit('calledToRoom', users);
+                    s.emit('calledToRoom', users, room);
                         s.broadcast.emit('announcement', s.nickname + ' connected');
                     return false;
                 } else {
@@ -67,7 +63,9 @@ io.sockets.on('connection', function (socket) {
         });
     }
 
-
+  socket.on('getRooms', function (callback) {
+      callback(socket.rooms.slice(1));
+  });
 
   socket.on('user message', function (msg) {
     socket.broadcast.emit('user message', socket.nickname, msg);
