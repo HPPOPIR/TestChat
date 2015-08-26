@@ -50,6 +50,26 @@ html
         return (now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds());
       }
 
+      function getOnlineUsers() {
+        $.get('/getOnlineUsers', function (onlineUsers) {
+          var onlineUsersDiv = document.getElementById('online-users');
+          for (var user in onlineUsers) {
+            var chbElement = document.createElement('input');
+            chbElement.type = 'checkbox';
+            chbElement.id = user;
+
+            var lblElement = document.createElement('label');
+            lblElement.htmlFor = user;
+            lblElement.appendChild(document.createTextNode(user));
+
+
+            onlineUsersDiv.appendChild(chbElement);
+            onlineUsersDiv.appendChild(lblElement);
+          }
+          onlineUsersDiv
+        });
+      }
+
       // dom manipulation
       $(function () {
         $('#set-nickname').submit(function (ev) {
@@ -58,7 +78,11 @@ html
           socket.emit('nickname', $('#nick').val(), function (set) {
             if (!set) {
               clear();
-              return $('#chat').addClass('nickname-set');
+              getOnlineUsers();
+              $('#nickname').hide();
+              $('#messages').hide();
+              $('#online-users').show();
+
             }
             $('#nickname-err').css('visibility', 'visible');
           });
@@ -77,21 +101,33 @@ html
           $('#message').val('').focus();
         };
       });
-  body
-    #chat
-      #nickname
-        form.wrap#set-nickname
-          p Enter your nickname.
-          input#nick
-          br
-          button#enter-button Enter
-          p#nickname-err Nickname already in use!
-          p#nickname-blank Nickname shouldn't be blank!
-      #connecting
-        .wrap Connecting to socket.io server
-      #messages
-        #nicknames
-        #lines
-      form#send-message
-        input#message
-        button Send
+
+
+
+   body
+       #chat
+           #nickname
+               form.wrap#set-nickname
+                 p Enter your nickname.
+                 input#nick
+                 br
+                 button#enter-button Enter
+                 p#nickname-err Nickname already in use!
+                 p#nickname-blank Nickname shouldn't be blank!
+           #online-users
+               div
+                 button#selectAllButton Select all
+               label Users:
+           #connecting
+               .wrap Connecting to socket.io server
+           #messages
+               #nicknames
+               #lines
+               form#send-message
+                   input#message
+                   button Send
+
+    script
+        $('#selectAllButton').click(function () {
+          $('#online-users input[type="checkbox"]').each( function (key, val) { $(this).prop('checked', true); } )
+        });

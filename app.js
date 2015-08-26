@@ -38,6 +38,10 @@ app.get('/', function (req, res) {
   res.render('index', { layout: false });
 });
 
+app.get('/getOnlineUsers', function (req, res) {
+    return res.json(nicknames);
+});
+
 /**
  * App listen.
  */
