@@ -40,10 +40,13 @@ html
         message('System', e ? e : 'A unknown error occurred');
       });
 
+      socket.on('calledToRoom', function (users) {
+        showChat(users);
+      });
+
       function addUserNamesToChat(nicknames) {
         $('#nicknames').empty().append($('<span>Online: </span>'));
-        $('#nicknames').append($('<b>').text(currentUser));
-          for (var i in nicknames) {
+        for (var i in nicknames) {
           $('#nicknames').append($('<b>').text(nicknames[i]));
         }
       }
@@ -63,10 +66,19 @@ html
 
       function getSelectedUsers() {
       var users = [];
-        $('#online-users label[for]').each( function (key, val) {
-          users.push($(this).html())
+        $('#online-users input[type="checkbox"]').each( function (key, val) {
+          if( $(this).is(":checked") ) {
+           users.push($(this).prop('id'));
+          }
         });
+        users.push(currentUser);
         return users;
+      }
+
+      function showChat(users) {
+        $('#messages').show();
+        $('#chat').addClass('users-selected');
+        addUserNamesToChat(users);
       }
 
       function createRoom() {
@@ -74,9 +86,7 @@ html
             users = getSelectedUsers();
         if( roomName ) {
           socket.emit('createRoom', roomName, users, function () {
-            $('#messages').show();
-            $('#chat').addClass('users-selected');
-            addUserNamesToChat(users);
+            showChat(users);
           });
         }
       }
@@ -156,6 +166,8 @@ html
 
            #connecting
                .wrap Connecting to socket.io server
+           #rooms
+
            #messages
                #nicknames
                #lines

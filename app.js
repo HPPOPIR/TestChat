@@ -51,13 +51,30 @@ var io = sio.listen(app)
     }];
 
 io.sockets.on('connection', function (socket) {
+
+    function addUsersToRoom(users, room) {
+        users.forEach(function (user) {
+            io.sockets.sockets.every(function (s) {
+                if( s.nickname === user) {
+                    s.join(room);
+                    s.emit('calledToRoom', users);
+                        s.broadcast.emit('announcement', s.nickname + ' connected');
+                    return false;
+                } else {
+                    return true;
+                }
+            });
+        });
+    }
+
+
+
   socket.on('user message', function (msg) {
     socket.broadcast.emit('user message', socket.nickname, msg);
   });
 
   socket.on('createRoom', function (roomName, users, callback) {
-      socket.join(roomName);
-      socket.room = roomName;
+      addUsersToRoom(users, roomName);
       callback();
   });
 
@@ -68,7 +85,6 @@ io.sockets.on('connection', function (socket) {
           } else {
               fn(false);
               nicknames[nick] = socket.nickname = nick;
-              socket.broadcast.emit('announcement', nick + ' connected');
               io.sockets.emit('nicknames', nicknames);
           }
       } else {
