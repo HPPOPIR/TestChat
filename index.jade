@@ -7,6 +7,7 @@ html
     script
       // socket.io specific code
       var socket = io.connect();
+      var currentUser = '';
 
       socket.on('connect', function () {
         $('#chat').addClass('connected');
@@ -17,10 +18,11 @@ html
       });
 
       socket.on('nicknames', function (nicknames) {
-        $('#nicknames').empty().append($('<span>Online: </span>'));
+        /*$('#nicknames').empty().append($('<span>Online: </span>'));
         for (var i in nicknames) {
           $('#nicknames').append($('<b>').text(nicknames[i]));
-        }
+        }*/
+        getOnlineUsers();
       });
 
       socket.on('emptyNickname', function () {
@@ -28,6 +30,7 @@ html
       });
 
       socket.on('user message', message);
+
       socket.on('reconnect', function () {
         $('#lines').remove();
         message('System', 'Reconnected to the server');
@@ -50,23 +53,33 @@ html
         return (now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds());
       }
 
+      function clearOnlineUsers() {
+        var onlineUsersDiv = $('#online-users');
+          onlineUsersDiv.empty()
+                        .append($('<div> <button id="selectAllButton"> Select all </button> </div> <label> Online users: </label>'));
+      }
+
       function getOnlineUsers() {
         $.get('/getOnlineUsers', function (onlineUsers) {
+          clearOnlineUsers();
           var onlineUsersDiv = document.getElementById('online-users');
           for (var user in onlineUsers) {
-            var chbElement = document.createElement('input');
-            chbElement.type = 'checkbox';
-            chbElement.id = user;
+            if ( currentUser !== user ) {
+              var chbElement = document.createElement('input');
+              chbElement.type = 'checkbox';
+              chbElement.id = user;
 
-            var lblElement = document.createElement('label');
-            lblElement.htmlFor = user;
-            lblElement.appendChild(document.createTextNode(user));
+              var lblElement = document.createElement('label');
+              lblElement.htmlFor = user;
+              lblElement.appendChild(document.createTextNode(user));
 
-
-            onlineUsersDiv.appendChild(chbElement);
-            onlineUsersDiv.appendChild(lblElement);
+              onlineUsersDiv.appendChild(chbElement);
+              onlineUsersDiv.appendChild(lblElement);
+            }
           }
-          onlineUsersDiv
+          var btnElem = document.createElement('button');
+            btnElem.textContent = 'Create room';
+            onlineUsersDiv.appendChild(btnElem);
         });
       }
 
@@ -75,7 +88,8 @@ html
         $('#set-nickname').submit(function (ev) {
           $('#nickname-blank').css('visibility', 'hidden');
           $('#nickname-err').css('visibility', 'hidden');
-          socket.emit('nickname', $('#nick').val(), function (set) {
+          currentUser = $('#nick').val();
+          socket.emit('nickname', currentUser, function (set) {
             if (!set) {
               clear();
               getOnlineUsers();
@@ -104,7 +118,7 @@ html
 
 
 
-   body
+  body
        #chat
            #nickname
                form.wrap#set-nickname
@@ -127,7 +141,7 @@ html
                    input#message
                    button Send
 
-    script
+  script
         $('#selectAllButton').click(function () {
           $('#online-users input[type="checkbox"]').each( function (key, val) { $(this).prop('checked', true); } )
         });
