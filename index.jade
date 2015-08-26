@@ -44,7 +44,23 @@ html
       socket.on('calledToRoom', function (users, roomName) {
         currentRoom = roomName;
         showChat(users);
+        createRoomWindow(roomName);
       });
+
+      function switchMessageBox(room) {
+        $('div.lines').each(function (key, div) {
+          if ( div.id !== ('lines' + room) ) {
+            div.style.display = 'none';
+          } else {
+            div.style.display = 'initial';
+          }
+        });
+      }
+
+      function createRoomWindow(room) {
+        $('<div id="lines' + room + '" class="lines"> </div>').insertBefore('#send-message');
+        switchMessageBox(room);
+      }
 
       function addUserNamesToChat(nicknames) {
         $('#nicknames').empty().append($('<span>Online: </span>'));
@@ -53,8 +69,8 @@ html
         }
       }
 
-      function message (from, msg) {
-        $('#lines').append($('<p>').append($('<b>').text(getDateTime() + '  ' + from + ': '), msg));
+      function message (from, msg, room) {
+        $('#lines' + room).append($('<p>').append($('<b>').text(getDateTime() + '  ' + from + ': '), msg));
       }
 
       function getDateTime() {
@@ -86,6 +102,7 @@ html
             $(btn).removeClass('unselected').addClass('selected');
           }
         });
+        switchMessageBox(currentRoom);
       }
 
       function getRooms() {
@@ -164,10 +181,9 @@ html
         });
 
         $('#send-message').submit(function () {
-          message('me', $('#message').val());
-          socket.emit('user message', $('#message').val());
+          socket.emit('user message', $('#message').val(), currentRoom, currentUser);
           clear();
-          $('#lines').get(0).scrollTop = 10000000;
+          $('#lines' + currentRoom).get(0).scrollTop = 10000000;
           return false;
         });
 
@@ -193,7 +209,6 @@ html
            #rooms
                #room
                #nicknames
-               #lines
                form#send-message
                    input#message
                    button Send

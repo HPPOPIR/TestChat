@@ -67,8 +67,8 @@ io.sockets.on('connection', function (socket) {
       callback(socket.rooms.slice(1));
   });
 
-  socket.on('user message', function (msg) {
-    socket.broadcast.emit('user message', socket.nickname, msg);
+  socket.on('user message', function (msg, room, user) {
+      io.sockets.in(room).emit('user message', user, msg, room);
   });
 
   socket.on('createRoom', function (roomName, users, callback) {
