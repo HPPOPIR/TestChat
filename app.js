@@ -60,14 +60,18 @@ io.sockets.on('connection', function (socket) {
   });
 
   socket.on('nickname', function (nick, fn) {
-    if (nicknames[nick]) {
-      fn(true);
-    } else {
-      fn(false);
-      nicknames[nick] = socket.nickname = nick;
-      socket.broadcast.emit('announcement', nick + ' connected');
-      io.sockets.emit('nicknames', nicknames);
-    }
+      if ( nick ) {
+          if (nicknames[nick]) {
+              fn(true);
+          } else {
+              fn(false);
+              nicknames[nick] = socket.nickname = nick;
+              socket.broadcast.emit('announcement', nick + ' connected');
+              io.sockets.emit('nicknames', nicknames);
+          }
+      } else {
+          io.sockets.emit('emptyNickname');
+      }
   });
 
   socket.on('disconnect', function () {

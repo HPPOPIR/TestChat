@@ -1,7 +1,7 @@
 @import 'nib'
 
 #chat, #nickname, #messages
-  width 600px
+  width 100%
 
 #chat
   position relative
@@ -9,13 +9,13 @@
 
 #nickname, #connecting
   position absolute
-  height 410px
+  height 100%
   z-index 100
   left 0
   top 0
   background #fff
   text-align center
-  width 600px
+  width 100%
   font 15px Georgia
   color #666
   display block
@@ -30,8 +30,13 @@
       border-color #999
       outline 0
   #nickname-err
-    color darkred
-    font-size 12px
+    color red
+    font-size 22px
+    visibility hidden
+
+  #nickname-blank
+    color red
+    font-size 22px
     visibility hidden
 
 .connected
@@ -43,7 +48,7 @@
     display none
 
 #messages
-  height 380px
+  height 100%
   background #eee
   em
     text-shadow 0 1px 0 #fff
@@ -73,7 +78,7 @@
       border-radius 10px
       text-shadow 0 1px 0 #666
   #lines
-    height 355px
+    height 570px
     overflow auto
     overflow-x hidden
     overflow-y auto
@@ -89,11 +94,11 @@
       background-color #fff
       -webkit-border-radius 3px
     &::-webkit-scrollbar-thumb:vertical
-      height 50px
+      height 100px
       background-color #ccc
       -webkit-border-radius 3px
     &::-webkit-scrollbar-thumb:horizontal
-      width 50px
+      width 70px
       background-color #fff
       -webkit-border-radius 3px
 
@@ -113,6 +118,18 @@
     position absolute
     top 5px
     right 5px
+
+#enter-button
+    margin-top: 10px
+    padding-top: 10px
+    padding-bottom: 10px
+    width: 100px
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0, green), color-stop(1, green))
+    background: -webkit-linear-gradient(top, green 0%, green 100%)
+    background: -moz-linear-gradient(top, green 0%, green 100%)
+    background: linear-gradient(top, green 0%, green 100%)
+    font-size 20px
+
 
 button
   download-button()
