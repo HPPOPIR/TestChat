@@ -31,18 +31,6 @@ app.configure(function () {
 });
 
 /**
- * App routes.
- */
-
-app.get('/', function (req, res) {
-  res.render('index', { layout: false });
-});
-
-app.get('/getOnlineUsers', function (req, res) {
-    return res.json(nicknames);
-});
-
-/**
  * App listen.
  */
 
@@ -56,11 +44,21 @@ app.listen(process.env.PORT||3000, function () {
  */
 
 var io = sio.listen(app)
-  , nicknames = {};
+  , nicknames = {},
+    rooms = [{
+        roomName: '',
+        users: []
+    }];
 
 io.sockets.on('connection', function (socket) {
   socket.on('user message', function (msg) {
     socket.broadcast.emit('user message', socket.nickname, msg);
+  });
+
+  socket.on('createRoom', function (roomName, users, callback) {
+      socket.join(roomName);
+      socket.room = roomName;
+      callback();
   });
 
   socket.on('nickname', function (nick, fn) {
@@ -85,4 +83,16 @@ io.sockets.on('connection', function (socket) {
     socket.broadcast.emit('announcement', socket.nickname + ' disconnected');
     socket.broadcast.emit('nicknames', nicknames);
   });
+});
+
+/**
+ * App routes.
+ */
+
+app.get('/', function (req, res) {
+    res.render('index', { layout: false });
+});
+
+app.get('/getOnlineUsers', function (req, res) {
+    return res.json(nicknames);
 });

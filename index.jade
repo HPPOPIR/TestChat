@@ -18,10 +18,6 @@ html
       });
 
       socket.on('nicknames', function (nicknames) {
-        /*$('#nicknames').empty().append($('<span>Online: </span>'));
-        for (var i in nicknames) {
-          $('#nicknames').append($('<b>').text(nicknames[i]));
-        }*/
         getOnlineUsers();
       });
 
@@ -44,6 +40,14 @@ html
         message('System', e ? e : 'A unknown error occurred');
       });
 
+      function addUserNamesToChat(nicknames) {
+        $('#nicknames').empty().append($('<span>Online: </span>'));
+        $('#nicknames').append($('<b>').text(currentUser));
+          for (var i in nicknames) {
+          $('#nicknames').append($('<b>').text(nicknames[i]));
+        }
+      }
+
       function message (from, msg) {
         $('#lines').append($('<p>').append($('<b>').text(getDateTime() + '  ' + from + ': '), msg));
       }
@@ -53,10 +57,35 @@ html
         return (now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds());
       }
 
+      function selectAll() {
+        $('#online-users input[type="checkbox"]').each( function (key, val) { $(this).prop('checked', true); } );
+      }
+
+      function getSelectedUsers() {
+      var users = [];
+        $('#online-users label[for]').each( function (key, val) {
+          users.push($(this).html())
+        });
+        return users;
+      }
+
+      function createRoom() {
+        var roomName = $('#inpRoomName').val(),
+            users = getSelectedUsers();
+        if( roomName ) {
+          socket.emit('createRoom', roomName, users, function () {
+            $('#messages').show();
+            $('#chat').addClass('users-selected');
+            addUserNamesToChat(users);
+          });
+        }
+      }
+
       function clearOnlineUsers() {
         var onlineUsersDiv = $('#online-users');
           onlineUsersDiv.empty()
-                        .append($('<div> <button id="selectAllButton"> Select all </button> </div> <label> Online users: </label>'));
+                        .append($('<div> <button id="btnSelectAllButton" onclick="selectAll()"> Select all </button>  <input type="text" id="inpRoomName" placeholder="Type room name"/> <button id="btnCreateRoom" onclick="createRoom()"> Create room </button>  </div> ' +
+                         '<div>  </div> <label> Online users: </label>'));
       }
 
       function getOnlineUsers() {
@@ -77,9 +106,6 @@ html
               onlineUsersDiv.appendChild(lblElement);
             }
           }
-          var btnElem = document.createElement('button');
-            btnElem.textContent = 'Create room';
-            onlineUsersDiv.appendChild(btnElem);
         });
       }
 
@@ -116,8 +142,6 @@ html
         };
       });
 
-
-
   body
        #chat
            #nickname
@@ -129,9 +153,7 @@ html
                  p#nickname-err Nickname already in use!
                  p#nickname-blank Nickname shouldn't be blank!
            #online-users
-               div
-                 button#selectAllButton Select all
-               label Users:
+
            #connecting
                .wrap Connecting to socket.io server
            #messages
@@ -141,7 +163,3 @@ html
                    input#message
                    button Send
 
-  script
-        $('#selectAllButton').click(function () {
-          $('#online-users input[type="checkbox"]').each( function (key, val) { $(this).prop('checked', true); } )
-        });
