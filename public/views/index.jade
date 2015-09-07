@@ -1,0 +1,48 @@
+doctype 5
+html
+  head
+    link(href='../stylesheets/style.css', rel='stylesheet')
+    script(src='http://code.jquery.com/jquery-1.6.1.min.js')
+    script(src='/socket.io/socket.io.js')
+    script
+        // socket.io specific code
+        var socket = io.connect();
+        socket.on('connect', function () {
+          $('#chat').addClass('connected');
+        });
+
+        function getLoginPage () {
+            $( "#content" ).load( "login" );
+        }
+
+
+
+    script(src='../controllers/login.js')
+    script(src='../controllers/chatRoom.js')
+    script(src='../controllers/onlineUsers.js')
+
+
+
+  body
+    div#content
+      button( onclick='getLoginPage()' )#btnLogin Login
+
+  //     #chat
+             #nickname
+                 form.wrap#set-nickname
+                   p Enter your nickname.
+                   input#nick
+                   br
+                   button#enter-button Enter
+                   p#nickname-err Nickname already in use!
+                   p#nickname-blank Nickname shouldn't be blank!
+             #online-users
+
+             #connecting
+                 .wrap Connecting to socket.io server
+             #rooms
+                 #room
+                 #nicknames
+                 form#send-message
+                     input#message
+                     button Send

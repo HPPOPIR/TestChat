@@ -7,7 +7,13 @@ var express = require('express'),
     stylus = require('stylus'),
     nib = require('nib'),
     sio = require('socket.io'),
-    _ = require('underscore');
+    _ = require('underscore'),
+    crypto = require('crypto'),
+    mongoose = require('mongoose');
+
+
+mongoose.connect('mongodb://localhost/chatDB');
+var db = mongoose.connection;
 
 /**
  * App.
@@ -22,11 +28,12 @@ var app = express.createServer();
 app.configure(function () {
   app.use(stylus.middleware({ src: __dirname + '/public', compile: compile }));
   app.use(express.static(__dirname + '/public'));
-  app.set('views', __dirname);
+  app.set('views', __dirname + '/public/views');
   app.set('view engine', 'jade');
-  app.use(session({secret: 'secret'}));
+    app.set("view options", { layout: false });
+    app.use(session({secret: 'secret'}));
 
-  function compile (str, path) {
+    function compile (str, path) {
     return stylus(str)
       .set('filename', path)
       .use(nib());
@@ -82,6 +89,17 @@ io.sockets.on('connection', function (socket) {
         });
     }
 
+    function checkRoomName (roomName) {
+        var result = true;
+        _.each(rooms, function (room) {
+            if( room.roomName === roomName ) {
+                result = false;
+            }
+        });
+
+        return result;
+    }
+
   socket.on('getRooms', function (callback) {
       callback(socket.rooms.slice(1));
   });
@@ -97,9 +115,13 @@ io.sockets.on('connection', function (socket) {
   });
 
   socket.on('createRoom', function (roomName, users, callback) {
-      addUsersToRoom(users, roomName);
-      rooms.push( createRoom(roomName, users) );
-      callback();
+      if ( checkRoomName(roomName) ) {
+          addUsersToRoom(users, roomName);
+          rooms.push( createRoom(roomName, users) );
+          callback();
+      } else {
+          callback(true); // When returning true, frontend will show error message.
+      }
   });
 
   socket.on('nickname', function (nick, fn) {
@@ -120,7 +142,7 @@ io.sockets.on('connection', function (socket) {
     if (!socket.nickname) return;
 
     delete nicknames[socket.nickname];
-    socket.broadcast.emit('announcement', socket.nickname + ' disconnected');
+//    socket.broadcast.emit('announcement', socket.nickname + ' disconnected');
     socket.broadcast.emit('nicknames', nicknames);
   });
 }, function (err) {
@@ -140,19 +162,57 @@ function checkUsername (nick) {
  */
 
 app.get('/', function (req, res) {
-    res.render('index', { layout: false });
+    res.render('index');
 });
 
 app.get('/getOnlineUsers', function (req, res) {
     return res.json(nicknames);
 });
 
-app.get('/login', function (req, res) {
+app.post('/login', function (req, res) {
     var username = req.param('username');
     if ( checkUsername(username) ) {
         req.session.currentUser = username;
-        return res.json(false);
+        return res.json('home');
     } else {
         return res.json(true);
     }
 });
+
+app.get('/login', function (req, res) {
+    res.render('login' );
+});
+
+app.get('/rooms', function (req, res) {
+    res.render('rooms');
+});
+app.get('/onlineUsers', function (req, res) {
+    res.render('onlineUsers');
+});
+
+
+
+
+// Registration logic
+
+function getNextID () {
+    ItemModel.findOne().max('_id').exec(function(err, item) {
+        // item.itemId is the max value
+    });
+}
+
+
+function insertUser (user) {
+    var newUser = mongoose.model('Users', { _id: getNextID(), name: user.name, password: user.password, salt: user.salt});
+
+    User.save('Users', newUser);
+}
+
+
+
+
+
+
+
+
+

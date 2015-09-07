@@ -3,6 +3,7 @@ socket.on('user message', message);
 //socket.on('announcement', function (msg) {
   //$('#lines').append($('<p>').append($('<em>').text(msg)));
 //});
+var currentRoom = '';
 
 socket.on('calledToRoom', function (users, roomName) {
   currentRoom = roomName;
@@ -54,16 +55,6 @@ function showChat(users) {
   getRooms();
 }
 
-function createRoom() {
-  var roomName = $('#inpRoomName').val(),
-      users = getSelectedUsers();
-  if( roomName ) {
-    socket.emit('createRoom', roomName, users, function () {
-      currentRoom = roomName;
-    });
-  }
-}
-
 function createRoomWindow(room) {
   $('<div id="lines' + room + '" class="lines"> </div>').insertBefore('#send-message');
   switchMessageBox(room);
@@ -80,41 +71,15 @@ function selectAll() {
   $('#online-users input[type="checkbox"]').each( function (key, val) { $(this).prop('checked', true); } );
 }
 
-function getSelectedUsers() {
-var users = [];
-  $('#online-users input[type="checkbox"]').each( function (key, val) {
-    if( $(this).is(":checked") ) {
-      users.push($(this).prop('id'));
-    }
-  });
-  users.push(currentUser);
-  return users;
-}
+$('#send-message').submit(function () {
+    socket.emit('user message', $('#message').val(), currentRoom, currentUser);
+    clear();
+    $('#lines' + currentRoom).get(0).scrollTop = 10000000;
+    return false;
+});
 
-function clearOnlineUsers() {
-  var onlineUsersDiv = $('#online-users');
-    onlineUsersDiv.empty()
-                  .append($('<div> <button id="btnSelectAllButton" onclick="selectAll()"> Select all </button>  <input type="text" id="inpRoomName" placeholder="Type room name"/> <button id="btnCreateRoom" onclick="createRoom()"> Create room </button>  </div> ' +
-                    '<div>  </div> <label> Online users: </label>'));
-}
 
-function getOnlineUsers() {
-  $.get('/getOnlineUsers', function (onlineUsers) {
-    clearOnlineUsers();
-    var onlineUsersDiv = document.getElementById('online-users');
-    for (var user in onlineUsers) {
-      if ( currentUser !== user ) {
-        var chbElement = document.createElement('input');
-        chbElement.type = 'checkbox';
-        chbElement.id = user;
 
-        var lblElement = document.createElement('label');
-        lblElement.htmlFor = user;
-        lblElement.appendChild(document.createTextNode(user));
 
-        onlineUsersDiv.appendChild(chbElement);
-        onlineUsersDiv.appendChild(lblElement);
-      }
-    }
-  });
-}
+
+
