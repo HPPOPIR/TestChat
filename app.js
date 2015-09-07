@@ -2,10 +2,11 @@
  * Module dependencies.
  */
 
-var express = require('express')
-  , stylus = require('stylus')
-  , nib = require('nib')
-  , sio = require('socket.io'),
+var express = require('express'),
+    session = require('express-session'),
+    stylus = require('stylus'),
+    nib = require('nib'),
+    sio = require('socket.io'),
     _ = require('underscore');
 
 /**
@@ -23,6 +24,7 @@ app.configure(function () {
   app.use(express.static(__dirname + '/public'));
   app.set('views', __dirname);
   app.set('view engine', 'jade');
+  app.use(session({secret: 'secret'}));
 
   function compile (str, path) {
     return stylus(str)
@@ -101,13 +103,13 @@ io.sockets.on('connection', function (socket) {
   });
 
   socket.on('nickname', function (nick, fn) {
-      if ( nick ) {
-          if (nicknames[nick]) {
-              fn(true);
-          } else {
-              fn(false);
+      if( nick ) {
+          if ( checkUsername(nick) ) {
               nicknames[nick] = socket.nickname = nick;
               io.sockets.emit('nicknames', nicknames);
+              fn(false);
+          } else {
+              fn(true);
           }
       } else {
           io.sockets.emit('emptyNickname');
@@ -125,6 +127,14 @@ io.sockets.on('connection', function (socket) {
     console.log(err);
 });
 
+function checkUsername (nick) {
+    if (nicknames[nick]) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
 /**
  * App routes.
  */
@@ -135,4 +145,14 @@ app.get('/', function (req, res) {
 
 app.get('/getOnlineUsers', function (req, res) {
     return res.json(nicknames);
+});
+
+app.get('/login', function (req, res) {
+    var username = req.param('username');
+    if ( checkUsername(username) ) {
+        req.session.currentUser = username;
+        return res.json(false);
+    } else {
+        return res.json(true);
+    }
 });
