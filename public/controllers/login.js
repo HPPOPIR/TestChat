@@ -3,9 +3,7 @@ var currentUser = '';
 
 socket.on('nicknames', function (nicknames) {
     if( socket.ids ) {
-        $( '#content' ).load( 'onlineUsers', function () {
-            getOnlineUsers(nicknames);
-        });
+        loadOnlineUsers();
     }
 });
 
@@ -32,9 +30,7 @@ function login() {
     currentUser = $('#nick').val();
     $.post('/login?username=' + currentUser, function (response) {
         socket.emit('nickname', currentUser, function (set) {
-            if (!set) {
-//                clear();
-            } else {
+            if ( set ) {
                 $('#nickname-err').css('visibility', 'visible');
             }
         });
@@ -43,4 +39,10 @@ function login() {
 
 function clear () {
     $('#message').val('').focus();
+}
+
+function loadOnlineUsers () {
+    $( '#content' ).load( 'onlineUsers', function () {
+        getOnlineUsers();
+    });
 }

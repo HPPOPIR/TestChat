@@ -10,7 +10,7 @@ function addRooms () {
             console.log(response.err);
         } else {
             response.rooms.forEach(function (room) {
-                $('<button onclick="openRoom( $(this).html())">  </button>').html(room).insertAfter('#roomsDiv');
+                $('<button onclick="openRoom( $(this).html())" class="margin5">  </button>').html(room).insertAfter('#roomsDiv');
             });
         }
     });
@@ -64,7 +64,7 @@ function clearOnlineUsers() {
 
 function createRoom() {
     hideErrorLabels();
-    var roomName = $('#inpRoomName').val(),
+    var roomName = $('#inpRoomName').val().trim(),
         users = getSelectedUsers();
     if( roomName ) {
         if ( users.length > 1 ) {
