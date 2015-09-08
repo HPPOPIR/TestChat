@@ -7,8 +7,18 @@ var currentRoom = '';
 
 socket.on('calledToRoom', function (users, roomName) {
   currentRoom = roomName;
-  showChat(users);
+  if( confirm("You are added to room: " + roomName + ", do you want to open it?") ) {
+    showChat(users);
+  }
 });
+
+function openRoom (roomName) {
+    $.get('/openRoom?roomName=' + roomName, function (response) {
+        currentRoom = roomName;
+        socket.emit('joinInRoom', roomName);
+        showChat( response.users );
+    });
+}
 
 function message (msg, room) {
   $('#lines' + room).append($('<p>').append($('<b>').text(msg.time + '  ' + msg.username + ': '), msg.text));

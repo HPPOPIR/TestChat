@@ -4,7 +4,7 @@ var currentUser = '';
 socket.on('nicknames', function (nicknames) {
     if( socket.ids ) {
         $( '#content' ).load( 'onlineUsers', function () {
-        getOnlineUsers(nicknames);
+            getOnlineUsers(nicknames);
         });
     }
 });

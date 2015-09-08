@@ -3,6 +3,19 @@ socket.on('refreshOnlineUsers', function () {
     getOnlineUsers();
 });
 
+function addRooms () {
+    $('<div id="roomsDiv"> </div>').insertAfter('#usersDiv');
+    $.post('/getRooms?username=' + currentUser, function (response) {
+        if( response.err ) {
+            console.log(response.err);
+        } else {
+            response.rooms.forEach(function (room) {
+                $('<button onclick="openRoom( $(this).html())">  </button>').html(room).insertAfter('#roomsDiv');
+            });
+        }
+    });
+}
+
 function addErrorLabels () {
     $( "<label id='users-not-selected' class='error'> Please select at least one user! </label>" ).insertAfter( "#btnCreateRoom" );
     $( "<label id='room-name-blank' class='error'> Please type room name! </label>" ).insertAfter( "#btnCreateRoom" );
@@ -19,7 +32,9 @@ function hideErrorLabels () {
 function getOnlineUsers() {
     $.get('/getOnlineUsers', function (onlineUsers) {
         clearOnlineUsers();
-        var onlineUsersDiv = document.getElementById('online-users');
+        var mainDiv = document.getElementById('online-users'),
+            newDiv = document.createElement('div');
+        newDiv.id = 'usersDiv';
         for (var user in onlineUsers) {
             if ( currentUser !== user ) {
                 var chbElement = document.createElement('input');
@@ -30,11 +45,13 @@ function getOnlineUsers() {
                 lblElement.htmlFor = user;
                 lblElement.appendChild(document.createTextNode(user));
 
-                onlineUsersDiv.appendChild(chbElement);
-                onlineUsersDiv.appendChild(lblElement);
+                newDiv.appendChild(chbElement);
+                newDiv.appendChild(lblElement);
             }
         }
+        mainDiv.appendChild(newDiv);
         addErrorLabels();
+        addRooms();
     });
 }
 

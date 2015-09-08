@@ -100,6 +100,10 @@ io.sockets.on('connection', function (socket) {
         return result;
     }
 
+  socket.on('joinInRoom', function (roomName) {
+    socket.join(roomName);
+  });
+
   socket.on('getRooms', function (callback) {
       callback(socket.rooms.slice(1));
   });
@@ -129,7 +133,7 @@ io.sockets.on('connection', function (socket) {
           if ( checkUsername(nick) ) {
               nicknames[nick] = socket.nickname = nick;
               io.sockets.emit('nicknames', nicknames);
-              socket.emit('refreshOnlineUsers', nicknames);
+//              socket.emit('refreshOnlineUsers', nicknames);
               fn(false);
           } else {
               fn(true);
@@ -162,6 +166,21 @@ function getContentForRoom (room) {
     return _.find(rooms, function (r) {
         return r.roomName === room;
     })
+}
+
+function getRoomsForUser (username) {
+    var result = _.filter(rooms, function (room) {
+        return _.contains(room.users, username);
+    });
+    return _.pluck(result, 'roomName');
+}
+
+function getUsersFromRoom (roomName) {
+    var result = _.find(rooms, function (room) {
+        return room.roomName === roomName;
+    }).users;
+
+    return result;
 }
 
 /**
@@ -200,8 +219,24 @@ app.post('/getChatRoomContent', function (req, res) {
     return res.json(result);
 });
 
+app.post('/getRooms', function (req, res) {
+    var username = req.param('username');
+
+    if( username ) {
+        return res.json( {rooms: getRoomsForUser(username)} );
+    } else {
+        return res.json( {err: 'Username is empty!'} );
+    }
+});
+
 app.get('/onlineUsers', function (req, res) {
     res.render('onlineUsers');
+});
+
+app.get('/openRoom', function (req, res) {
+    var roomName = req.param('roomName');
+    var users = getUsersFromRoom(roomName);
+    res.json( {users: users} );
 });
 
 
