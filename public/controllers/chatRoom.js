@@ -14,6 +14,11 @@ socket.on('calledToRoom', function (users, roomName) {
   }
 });
 
+function leaveRoom () {
+    socket.emit('leaveRoom', currentRoom);
+    loadOnlineUsers();
+}
+
 function openRoom (roomName) {
     $.get('/openRoom?roomName=' + roomName, function (response) {
         currentRoom = roomName;

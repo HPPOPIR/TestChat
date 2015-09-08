@@ -61,35 +61,35 @@ var io = sio.listen(app)
 
 io.sockets.on('connection', function (socket) {
 
-    function generateMessage (username, msgText) {
-        return {username: username, text: msgText, time: getTime()} ;
-    }
+  function generateMessage (username, msgText) {
+      return {username: username, text: msgText, time: getTime()} ;
+  }
 
-    function createRoom (roomName, users) {
-        return {roomName: roomName, users: users, messages: [] } ;
-    }
+  function createRoom (roomName, users) {
+      return {roomName: roomName, users: users, messages: [] } ;
+  }
 
-    function getTime() {
-        var now = new Date();
-        return (now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds());
-    }
+  function getTime() {
+      var now = new Date();
+      return (now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds());
+  }
 
-    function addUsersToRoom(users, room) {
-        users.forEach(function (user) {
-            io.sockets.sockets.every(function (s) {
-                if( s.nickname === user) {
-                    s.join(room);
-                    s.emit('calledToRoom', users, room);
-                    s.broadcast.emit('announcement', s.nickname + ' connected', room);
-                    return false;
-                } else {
-                    return true;
-                }
-            });
-        });
-    }
+  function addUsersToRoom(users, room) {
+      users.forEach(function (user) {
+          io.sockets.sockets.every(function (s) {
+              if( s.nickname === user) {
+                  s.join(room);
+                  s.emit('calledToRoom', users, room);
+                  s.broadcast.emit('announcement', s.nickname + ' connected', room);
+                  return false;
+              } else {
+                  return true;
+              }
+          });
+      });
+  }
 
-    function checkRoomName (roomName) {
+  function checkRoomName (roomName) {
         var result = true;
         _.each(rooms, function (room) {
             if( room.roomName === roomName ) {
