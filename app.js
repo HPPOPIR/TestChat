@@ -2,6 +2,8 @@
  * Module dependencies.
  */
 
+var DUPLICATE_USER = 'Duplicate username';
+
 var express = require('express'),
     session = require('express-session'),
     stylus = require('stylus'),
@@ -9,11 +11,16 @@ var express = require('express'),
     sio = require('socket.io'),
     _ = require('underscore'),
     crypto = require('crypto'),
-    mongoose = require('mongoose');
+    mongoose = require('mongoose'),
+    q = require('q');
 
 
 mongoose.connect('mongodb://localhost/chatDB');
 var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function (callback) {
+    console.log('ChatDB is open');
+});
 
 /**
  * App.
@@ -172,11 +179,7 @@ io.sockets.on('connection', function (socket) {
 });
 
 function checkUsername (nick) {
-    if (nicknames[nick]) {
-        return false;
-    } else {
-        return true;
-    }
+    return !nicknames[nick];
 }
 
 function getContentForRoom (room) {
@@ -213,66 +216,182 @@ app.get('/getOnlineUsers', function (req, res) {
 });
 
 app.post('/login', function (req, res) {
-    var username = req.param('username');
-    if ( checkUsername(username) ) {
-        req.session.currentUser = username;
-        return res.json();
-    } else {
-        return res.json(true);
+    var username = req.param('username'),
+        password = req.param('password');
+    findUserByNameQ(username)
+        .then(function (user) {
+            if ( user ) {
+                authenticateUserQ(username, password)
+                    .then(function (authenticated) {
+                        if ( authenticated ) {
+                            req.session.currentUser = username;
+                            return res.json(authenticated);
+                        } else {
+                            return res.json(authenticated)
+                        }
+                    }, function (err) {
+                        return res.json(err);
+                    });
+            } else {
+                return res.json('missing username');
+            }
+        }, function (err) {
+            return res.json(err);
+        });
+});
+
+app.post('/register', function (req, res) {
+    var username = req.param('username'),
+        password = req.param('password');
+    insertUserQ(username, password)
+        .then(function (err) {
+            if ( err && err.err === DUPLICATE_USER ) {
+                return res.json(DUPLICATE_USER);
+            } else if ( err ) {
+                return res.json(err);
+            } else {
+                req.session.currentUser = username;
+                return res.json(true);
+            }
+        });
+});
+
+// <editor-fold desc="Get views">
+    app.get('/login', function (req, res) {
+        res.render('login');
+    });
+
+    app.get('/chatRoom', function (req, res) {
+        res.render('chatRoom');
+    });
+
+    app.get('/onlineUsers', function (req, res) {
+        res.render('onlineUsers');
+    });
+
+    app.get('/loadRegisterPage', function (req, res) {
+        res.render('register');
+    });
+
+// </editor-fold>
+
+    app.post('/getChatRoomContent', function (req, res) {
+        var room = req.param('room');
+        var result = getContentForRoom(room);
+        return res.json(result);
+    });
+
+    app.post('/getRooms', function (req, res) {
+        var username = req.param('username');
+
+        if (username) {
+            return res.json({rooms: getRoomsForUser(username)});
+        } else {
+            return res.json({err: 'Username is empty!'});
+        }
+    });
+
+
+    app.get('/openRoom', function (req, res) {
+        var roomName = req.param('roomName');
+        var users = getUsersFromRoom(roomName);
+        res.json({users: users});
+    });
+
+
+// Schemas
+
+    var usersSchema = mongoose.Schema({
+        '_id': {type: mongoose.Schema.ObjectId},
+        'username': {type: String, unique: true},
+        'hashed_password': String,
+        'salt': String
+    });
+
+
+// Mongoose models
+
+    var Users = mongoose.model('Users', usersSchema);
+
+    function encryptPassword(password, salt) {
+        return crypto.createHmac('sha1', salt).update(password).digest('hex');
     }
-});
 
-app.get('/login', function (req, res) {
-    return res.render('login' );
-});
+    function authenticateQ(id, plainText) {
+        var d = q.defer();
 
-app.get('/chatRoom', function (req, res) {
-    res.render('chatRoom');
-});
+        Users.findOne().where({_id: id}).exec(function (err, user) {
+            if (err) {
+                return d.reject(err);
+            } else {
+                return d.resolve(user.hashed_password === encryptPassword(plainText, user.salt));
+            }
+        });
 
-app.post('/getChatRoomContent', function (req, res) {
-    var room = req.param('room');
-    var result = getContentForRoom(room);
-    return res.json(result);
-});
-
-app.post('/getRooms', function (req, res) {
-    var username = req.param('username');
-
-    if( username ) {
-        return res.json( {rooms: getRoomsForUser(username)} );
-    } else {
-        return res.json( {err: 'Username is empty!'} );
+        return d.promise;
     }
-});
 
-app.get('/onlineUsers', function (req, res) {
-    res.render('onlineUsers');
-});
-
-app.get('/openRoom', function (req, res) {
-    var roomName = req.param('roomName');
-    var users = getUsersFromRoom(roomName);
-    res.json( {users: users} );
-});
-
-
+    function findUserByNameQ(username) {
+        var d = q.defer();
+        Users.findOne().where({username: username}).exec(function (err, user) {
+            if (err) {
+                return d.reject(err);
+            } else {
+                return d.resolve(user);
+            }
+        });
+        return d.promise;
+    }
 
 
 // Registration logic
 
-function getNextID () {
-    ItemModel.findOne().max('_id').exec(function(err, item) {
-        // item.itemId is the max value
-    });
-}
+    function authenticateUserQ(username, password) {
+        var d = q.defer();
 
+        findUserByNameQ(username)
+            .then(function (user) {
+                return authenticateQ(user._id, password);
+            })
+            .then(function (autenticated) {
+                return d.resolve(autenticated);
+            }, function (err) {
+                console.log(err);
+                return d.reject(err);
+            });
+        return d.promise;
+    }
 
-function insertUser (user) {
-    var newUser = mongoose.model('Users', { _id: getNextID(), name: user.name, password: user.password, salt: user.salt});
+    function insertUserQ(username, password) {
+        var d = q.defer();
+        findUserByNameQ(username)
+            .then(function (user) {
+                if ( !user ) {
+                    var salt = Math.round((new Date().valueOf() * Math.random())) + '',
+                        hashed_password = crypto.createHmac('sha1', salt).update(password).digest('hex');
+                    var newUser = new Users({
+                        _id: new mongoose.Types.ObjectId,
+                        username: username,
+                        hashed_password: hashed_password,
+                        salt: salt
+                    });
 
-    User.save('Users', newUser);
-}
+                    newUser.save(function (err) {
+                        if (err) {
+                            return d.resolve(err);
+                        } else {
+                            return d.resolve();
+                        }
+                    });
+                } else {
+                    return d.resolve({err: DUPLICATE_USER})
+                }
+            }, function (err) {
+                console.log(err);
+            });
+
+        return d.promise;
+    }
 
 
 

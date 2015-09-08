@@ -1,16 +1,13 @@
 #nickname
+    h2 Register page
     form.wrap(action='#')#set-nickname
         p Enter your nickname.
         input(placeholder="Type your username")#nick
-        p#nickname-err This user is already logged!
+        p#nickname-err Nickname already in use!
         p#nickname-blank Nickname shouldn't be blank!
-        p#nickname-missing User with this nickname isn't registered!
         br
         p Enter your password
         input(type="password", placeholder="Type your password")#password
         p#password-blank Password shouldn't be blank!
-        p#password-err Password is wrong!
         br
-        button(onclick='login()', class='enter-button') Login
-        br
-        button(onclick='loadRegisterPage()', class='enter-button') Register
+        button(onclick='register()', class='enter-button') Register

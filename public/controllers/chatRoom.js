@@ -101,6 +101,10 @@ function sendMessage() {
     return false;
 }
 
+function clear () {
+    $('#message').val('').focus();
+}
+
 
 
 

@@ -35,13 +35,28 @@
 }
 #nickname #nickname-err {
   color: #f00;
-  font-size: 22px;
-  visibility: hidden;
+  font-size: 20px;
+  display: none;
 }
 #nickname #nickname-blank {
   color: #f00;
-  font-size: 22px;
-  visibility: hidden;
+  font-size: 20px;
+  display: none;
+}
+#nickname #nickname-missing {
+  color: #f00;
+  font-size: 20px;
+  display: none;
+}
+#nickname #password-blank {
+  color: #f00;
+  font-size: 20px;
+  display: none;
+}
+#nickname #password-err {
+  color: #f00;
+  font-size: 20px;
+  display: none;
 }
 #online-users label {
   font-size: 20px;
