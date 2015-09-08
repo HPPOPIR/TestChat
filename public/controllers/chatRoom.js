@@ -1,14 +1,13 @@
 socket.on('user message', message);
 
-//socket.on('announcement', function (msg) {
-  //$('#lines').append($('<p>').append($('<em>').text(msg)));
-//});
+socket.on('announcement', function (msg) {
+  $('#lines').append($('<p>').append($('<em>').text(msg)));
+});
 var currentRoom = '';
 
 socket.on('calledToRoom', function (users, roomName) {
   currentRoom = roomName;
   showChat(users);
-  createRoomWindow(roomName);
 });
 
 function message (msg, room) {
@@ -16,13 +15,16 @@ function message (msg, room) {
 }
 
 function switchMessageBox(room) {
-  $('div.lines').each(function (key, div) {
-    if ( div.id !== ('lines' + room) ) {
-      div.style.display = 'none';
-    } else {
-      div.style.display = 'initial';
-    }
-  });
+    $.post('/getChatRoomContent?room=' + room, function (roomContent) {
+        insertRoomMessages(roomContent);
+        $('div.lines').each(function (key, div) {
+            if ( div.id !== ('lines' + room) ) {
+                div.style.display = 'none';
+            } else {
+                div.style.display = 'initial';
+            }
+        });
+    });
 }
 
 function changeCurrentRoom(newCurrentRoom) {
@@ -49,15 +51,19 @@ function getRooms() {
 }
 
 function showChat(users) {
-  $('#rooms').show();
-  $('#chat').addClass('users-selected');
-  addUserNamesToChat(users);
-  getRooms();
+  $('#content').load('chatRoom', function () {
+      addUserNamesToChat(users);
+      getRooms();
+//      insertRoomMessages(currentRoom);
+  });
 }
 
-function createRoomWindow(room) {
-  $('<div id="lines' + room + '" class="lines"> </div>').insertBefore('#send-message');
-  switchMessageBox(room);
+function insertRoomMessages(room) {
+  $('div.lines').empty();
+  $('<div id="lines' + room.roomName + '" class="lines"> </div>').insertBefore('#send-message');
+  room.messages.forEach(function (msg) {
+    message(msg, room.roomName);
+  });
 }
 
 function addUserNamesToChat(nicknames) {
@@ -71,12 +77,12 @@ function selectAll() {
   $('#online-users input[type="checkbox"]').each( function (key, val) { $(this).prop('checked', true); } );
 }
 
-$('#send-message').submit(function () {
+function sendMessage() {
     socket.emit('user message', $('#message').val(), currentRoom, currentUser);
     clear();
     $('#lines' + currentRoom).get(0).scrollTop = 10000000;
     return false;
-});
+}
 
 
 

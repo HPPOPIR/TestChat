@@ -11,10 +11,10 @@ html
           $('#chat').addClass('connected');
         });
 
-        function getLoginPage () {
+        window.onload = function getLoginPage () {
             $( "#content" ).load( "login" );
-        }
 
+        }
 
 
     script(src='../controllers/login.js')
@@ -24,8 +24,7 @@ html
 
 
   body
-    div#content
-      button( onclick='getLoginPage()' )#btnLogin Login
+    div#content( onload='getLoginPage()' )
 
   //     #chat
              #nickname

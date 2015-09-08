@@ -2,9 +2,11 @@
 var currentUser = '';
 
 socket.on('nicknames', function (nicknames) {
-    $( '#content' ).load( 'onlineUsers', function () {
+    if( socket.ids ) {
+        $( '#content' ).load( 'onlineUsers', function () {
         getOnlineUsers(nicknames);
-    });
+        });
+    }
 });
 
 socket.on('emptyNickname', function () {
@@ -28,12 +30,14 @@ function login() {
     $('#nickname-blank').css('visibility', 'hidden');
     $('#nickname-err').css('visibility', 'hidden');
     currentUser = $('#nick').val();
-    socket.emit('nickname', currentUser, function (set) {
-        if (!set) {
-            clear();
-        } else {
-            $('#nickname-err').css('visibility', 'visible');
-        }
+    $.post('/login?username=' + currentUser, function (response) {
+        socket.emit('nickname', currentUser, function (set) {
+            if (!set) {
+//                clear();
+            } else {
+                $('#nickname-err').css('visibility', 'visible');
+            }
+        });
     });
 }
 

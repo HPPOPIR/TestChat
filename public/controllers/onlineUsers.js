@@ -1,4 +1,8 @@
 
+socket.on('refreshOnlineUsers', function () {
+    getOnlineUsers();
+});
+
 function addErrorLabels () {
     $( "<label id='users-not-selected' class='error'> Please select at least one user! </label>" ).insertAfter( "#btnCreateRoom" );
     $( "<label id='room-name-blank' class='error'> Please type room name! </label>" ).insertAfter( "#btnCreateRoom" );

@@ -30,10 +30,10 @@ app.configure(function () {
   app.use(express.static(__dirname + '/public'));
   app.set('views', __dirname + '/public/views');
   app.set('view engine', 'jade');
-    app.set("view options", { layout: false });
-    app.use(session({secret: 'secret'}));
+  app.set("view options", { layout: false });
+  app.use(session({secret: 'secret'}));
 
-    function compile (str, path) {
+  function compile (str, path) {
     return stylus(str)
       .set('filename', path)
       .use(nib());
@@ -80,7 +80,7 @@ io.sockets.on('connection', function (socket) {
                 if( s.nickname === user) {
                     s.join(room);
                     s.emit('calledToRoom', users, room);
-                        s.broadcast.emit('announcement', s.nickname + ' connected');
+                    s.broadcast.emit('announcement', s.nickname + ' connected');
                     return false;
                 } else {
                     return true;
@@ -129,6 +129,7 @@ io.sockets.on('connection', function (socket) {
           if ( checkUsername(nick) ) {
               nicknames[nick] = socket.nickname = nick;
               io.sockets.emit('nicknames', nicknames);
+              socket.emit('refreshOnlineUsers', nicknames);
               fn(false);
           } else {
               fn(true);
@@ -157,6 +158,12 @@ function checkUsername (nick) {
     }
 }
 
+function getContentForRoom (room) {
+    return _.find(rooms, function (r) {
+        return r.roomName === room;
+    })
+}
+
 /**
  * App routes.
  */
@@ -173,19 +180,26 @@ app.post('/login', function (req, res) {
     var username = req.param('username');
     if ( checkUsername(username) ) {
         req.session.currentUser = username;
-        return res.json('home');
+        return res.json();
     } else {
         return res.json(true);
     }
 });
 
 app.get('/login', function (req, res) {
-    res.render('login' );
+    return res.render('login' );
 });
 
-app.get('/rooms', function (req, res) {
-    res.render('rooms');
+app.get('/chatRoom', function (req, res) {
+    res.render('chatRoom');
 });
+
+app.post('/getChatRoomContent', function (req, res) {
+    var room = req.param('room');
+    var result = getContentForRoom(room);
+    return res.json(result);
+});
+
 app.get('/onlineUsers', function (req, res) {
     res.render('onlineUsers');
 });
