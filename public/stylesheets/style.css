@@ -147,7 +147,7 @@
   top: 5px;
   right: 5px;
 }
-#enter-button {
+.enter-button {
   margin-top: 10px;
   padding-top: 10px;
   padding-bottom: 10px;
@@ -220,4 +220,7 @@ button.focus {
   -webkit-box-shadow: 0 1px 0 0 rgba(255,255,255,0.40), 0 0 4px 0 #377ad0;
   -moz-box-shadow: 0 1px 0 0 rgba(255,255,255,0.40), 0 0 4px 0 #377ad0;
   box-shadow: 0 1px 0 0 rgba(255,255,255,0.40), 0 0 4px 0 #377ad0;
+}
+.margin5 {
+  margin: 5px;
 }
