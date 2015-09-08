@@ -80,7 +80,7 @@ io.sockets.on('connection', function (socket) {
                 if( s.nickname === user) {
                     s.join(room);
                     s.emit('calledToRoom', users, room);
-                    s.broadcast.emit('announcement', s.nickname + ' connected');
+                    s.broadcast.emit('announcement', s.nickname + ' connected', room);
                     return false;
                 } else {
                     return true;
@@ -100,8 +100,25 @@ io.sockets.on('connection', function (socket) {
         return result;
     }
 
+  function removeUserFromRoom (roomNameToLeave) {
+      for (var key in rooms) {
+          if( rooms[key].roomName === roomNameToLeave ) {
+              for (var ind in rooms[key].users) {
+                  if ( rooms[key].users[ind] === socket.nickname ) {
+                      delete rooms[key].users[ind];
+                  }
+              }
+          }
+      }
+  }
+
   socket.on('joinInRoom', function (roomName) {
     socket.join(roomName);
+  });
+
+  socket.on('leaveRoom', function (room) {
+      socket.leave(room);
+      removeUserFromRoom(room);
   });
 
   socket.on('getRooms', function (callback) {

@@ -1,7 +1,7 @@
 socket.on('user message', message);
 
-socket.on('announcement', function (msg) {
-  $('#lines').append($('<p>').append($('<em>').text(msg)));
+socket.on('announcement', function (msg, room) {
+  $('#lines' + room).append($('<p>').append($('<em>').text(msg)));
 });
 var currentRoom = '';
 
@@ -9,6 +9,8 @@ socket.on('calledToRoom', function (users, roomName) {
   currentRoom = roomName;
   if( confirm("You are added to room: " + roomName + ", do you want to open it?") ) {
     showChat(users);
+  } else {
+    socket.emit('leaveRoom', currentRoom);
   }
 });
 
