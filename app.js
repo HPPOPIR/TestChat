@@ -31,14 +31,6 @@ app.configure(function () {
 });
 
 /**
- * App routes.
- */
-
-app.get('/', function (req, res) {
-  res.render('index', { layout: false });
-});
-
-/**
  * App listen.
  */
 
@@ -55,8 +47,33 @@ var io = sio.listen(app)
   , nicknames = {};
 
 io.sockets.on('connection', function (socket) {
-  socket.on('user message', function (msg) {
-    socket.broadcast.emit('user message', socket.nickname, msg);
+
+    function addUsersToRoom(users, room) {
+        users.forEach(function (user) {
+            io.sockets.sockets.every(function (s) {
+                if( s.nickname === user) {
+                    s.join(room);
+                    s.emit('calledToRoom', users, room);
+                        s.broadcast.emit('announcement', s.nickname + ' connected');
+                    return false;
+                } else {
+                    return true;
+                }
+            });
+        });
+    }
+
+  socket.on('getRooms', function (callback) {
+      callback(socket.rooms.slice(1));
+  });
+
+  socket.on('user message', function (msg, room, user) {
+      io.sockets.in(room).emit('user message', user, msg, room);
+  });
+
+  socket.on('createRoom', function (roomName, users, callback) {
+      addUsersToRoom(users, roomName);
+      callback();
   });
 
   socket.on('nickname', function (nick, fn) {
@@ -66,7 +83,6 @@ io.sockets.on('connection', function (socket) {
           } else {
               fn(false);
               nicknames[nick] = socket.nickname = nick;
-              socket.broadcast.emit('announcement', nick + ' connected');
               io.sockets.emit('nicknames', nicknames);
           }
       } else {
@@ -81,4 +97,16 @@ io.sockets.on('connection', function (socket) {
     socket.broadcast.emit('announcement', socket.nickname + ' disconnected');
     socket.broadcast.emit('nicknames', nicknames);
   });
+});
+
+/**
+ * App routes.
+ */
+
+app.get('/', function (req, res) {
+    res.render('index', { layout: false });
+});
+
+app.get('/getOnlineUsers', function (req, res) {
+    return res.json(nicknames);
 });
