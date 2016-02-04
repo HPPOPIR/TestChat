@@ -26,23 +26,3 @@ html
 
   body
     div#content( onload='getLoginPage()' )
-
-  //     #chat
-             #nickname
-                 form.wrap#set-nickname
-                   p Enter your nickname.
-                   input#nick
-                   br
-                   button#enter-button Enter
-                   p#nickname-err Nickname already in use!
-                   p#nickname-blank Nickname shouldn't be blank!
-             #online-users
-
-             #connecting
-                 .wrap Connecting to socket.io server
-             #rooms
-                 #room
-                 #nicknames
-                 form#send-message
-                     input#message
-                     button Send
